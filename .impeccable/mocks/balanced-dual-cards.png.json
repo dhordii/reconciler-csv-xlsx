@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "asset": {
+    "file": "balanced-dual-cards.png",
+    "mediaType": "image/png",
+    "width": 1672,
+    "height": 941
+  },
+  "source": {
+    "kind": "generated",
+    "provider": "OpenAI",
+    "tool": "built-in image_gen",
+    "workflow": "text-to-image"
+  },
+  "prompt": "Use case: ui-mockup\nAsset type: full-fidelity, shippable desktop web-app product UI comp, 16:9 landscape (1536×864 composition)\nPrimary request: Design the actual first viewport of the Upload step for a local-only browser app used by non-technical operations and finance staff to compare two CSV/XLSX files. This is the intentionally familiar, category-standard direction: polished, accessible, restrained, conventional modern SaaS/data-tool UI—not distinctive or experimental.\nScene/backdrop: Full application viewport only, with no browser chrome. Light theme on a very pale neutral page, content aligned to a clean 12-column grid with generous but efficient spacing.\nSubject and layout: A simple top app header with product name at upper left and a compact profile selector at upper right. Beneath it, a subtle privacy reassurance line. Then a horizontal six-step progress stepper across the content width, with the first step active. Main area contains two equal white upload cards side by side for File A and File B. Each card has a clear heading, restrained file icon/drop zone, accepted-format helper copy, and one primary-outline file chooser button. Footer/action row has a disabled Continue button aligned right. Use conventional form geometry, clear grouping, visible borders, strong focus/contrast readiness, 44px-class controls, and readable desktop typography.\nStyle/medium: High-fidelity product-design mockup rendered as crisp flat interface pixels. Familiar contemporary enterprise SaaS data-import workflow. White cards, 1px gray borders, subtle 8–12px corner radii, almost no shadow, clean system-sans typography, precise spacing and alignment.\nColor palette: #ffffff, #111827, #2563eb, #e5e7eb; only very light neutral page background if needed. Blue is reserved for the active Upload step and actionable controls.\nMaterials/textures: Clean grid, restrained white cards, conventional modern data-tool controls, crisp vector-like icons, flat surfaces.\nText (verbatim, render every item exactly once where described): Product name “Reconciler”. Privacy line “Your files stay on this device”. Stepper labels in this exact order: “Upload”, “Select data”, “Match columns”, “Set rules”, “Review & run”, “Results”. Left card label “File A”. Right card label “File B”. Each card button “Choose file”. Each card helper line “CSV or XLSX · up to 50 MB”. Profile control shows label “Profile” and selected value “New reconciliation”. Bottom action button “Continue”, visibly disabled.\nComposition/framing: Straight-on orthographic desktop UI, no perspective, no device frame. Keep all required controls above the fold with comfortable whitespace. Use an app content max-width around 1200px. Ensure the full stepper and both upload cards are prominent and legible.\nConstraints: English UI; light theme; first viewport must be the real Upload workflow, not a landing page; professional and accessible; restrained category-standard execution; accurate spelling and capitalization of all verbatim text; no extra buttons or navigation; no loaded filenames because this is the empty state.\nAvoid: gradients, glassmorphism, marketing hero sections, illustrations, people, mascots, charts, dashboards, exaggerated shadows, playful decoration, oversized headings, tiny text, dense metadata, logos, trademarks, watermark, fake browser chrome, device mockups, dark theme, purple or teal accents, lorem ipsum, pricing, sales copy.",
+  "approvedDirection": true,
+  "approved": true,
+  "approvalStage": "comp-round",
+  "approvalNote": "Approved by the user as the Balanced dual cards composition. Preserve the horizontal six-step rail, equal File A/File B upload cards, calm whitespace, and right-aligned next action. Do not literalize rasterized text, static-only states, or desktop-only geometry."
+}

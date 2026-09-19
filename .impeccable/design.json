@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "product": "Reconciler",
+  "direction": "Calm, precise enterprise workflow with balanced source cards and a blue action accent",
+  "sourceOfTruth": "src/styles.css",
+  "approvedReference": ".impeccable/mocks/balanced-dual-cards.png",
+  "themes": ["light", "dark", "system"],
+  "palette": {
+    "light": {
+      "canvas": "#f7f8fb",
+      "surface": "#ffffff",
+      "ink": "#0b1023",
+      "muted": "#616a7b",
+      "border": "#d7dde7",
+      "accent": "#0a4bea",
+      "accentStrong": "#063cc9",
+      "focus": "#7aa2ff",
+      "primaryBackground": "#0a4bea",
+      "primaryInk": "#ffffff",
+      "successInk": "#257151",
+      "successSurface": "#eaf8f0",
+      "warningInk": "#704f00",
+      "warningSurface": "#fff8df",
+      "dangerInk": "#912018",
+      "dangerSurface": "#fff4f2"
+    },
+    "dark": {
+      "canvas": "#10141d",
+      "surface": "#171c27",
+      "ink": "#f5f7fb",
+      "muted": "#aeb8c8",
+      "border": "#30394a",
+      "accent": "#7da2ff",
+      "accentStrong": "#9ab7ff",
+      "focus": "#9ab7ff",
+      "primaryBackground": "#315ecb",
+      "primaryInk": "#ffffff",
+      "successInk": "#9be6bd",
+      "successSurface": "#17382a",
+      "warningInk": "#f2d17f",
+      "warningSurface": "#3b321b",
+      "dangerInk": "#ffb4ac",
+      "dangerSurface": "#41201f"
+    }
+  },
+  "typography": {
+    "uiFamily": ["Segoe UI", "Arial", "sans-serif"],
+    "wordmarkFamily": ["Oxygen", "Segoe UI", "sans-serif"],
+    "oxygenDelivery": "local",
+    "wordmarkDesktop": { "sizePx": 37, "weight": 700, "lineHeight": 1, "letterSpacingEm": -0.035 },
+    "privacyMessageDesktop": { "sizePx": 20, "lineHeight": 1.2 },
+    "profileControlDesktop": { "sizePx": 19 }
+  },
+  "spacing": {
+    "strategy": "Preserve component-specific spacing; no global spacing scale is currently declared",
+    "headerToolsGapPx": 10,
+    "privacyAndProfileGapPx": 14,
+    "skipLinkPaddingPx": [10, 14],
+    "profileSelectPaddingPx": [0, 42, 0, 16],
+    "wideContainerTotalInsetPx": 144
+  },
+  "radii": {
+    "cardPx": 10,
+    "iconButtonPx": 10,
+    "profileSelectPx": 9,
+    "skipLinkPx": 8,
+    "otherExistingPx": [4, 8, 9, 10, 12, 14, 999],
+    "circularIndicators": "50%"
+  },
+  "layout": {
+    "minimumViewportPx": 360,
+    "wideContainerMaxPx": 1528,
+    "desktopHeaderHeightPx": 88,
+    "breakpoints": {
+      "compactDesktopRangePx": [1101, 1671],
+      "maxWidthsPx": [1100, 780, 480]
+    }
+  },
+  "motion": {
+    "workflowRevealDurationMs": 240,
+    "workflowRevealTranslateYPx": 10,
+    "workflowRevealEasing": "cubic-bezier(0.22, 1, 0.36, 1)",
+    "reducedMotion": "Honor prefers-reduced-motion: reduce",
+    "layoutStability": "Do not animate dimensions or shift adjacent controls when hints and statuses change"
+  },
+  "componentRules": [
+    "Preserve the upload, select, match, rules, review, and results workflow",
+    "Keep the two source cards balanced and their messages associated with the correct source",
+    "Use semantic color variables and synchronize explicit-dark and system-dark overrides",
+    "Every status must reflect real application or data state",
+    "Reserve space for conditional hints and changing labels",
+    "Keep wide data tables within their own scrolling region",
+    "Preserve 44px square icon buttons and readable labeled form controls",
+    "Preserve original data for uncertain corrections until the user explicitly chooses a replacement"
+  ],
+  "accessibilityRules": [
+    "Preserve the skip link, semantic controls, associated labels, and logical keyboard order",
+    "Preserve a visible 3px focus outline with a 3px offset derived from the focus token",
+    "Give icon-only controls accessible names",
+    "Communicate warning, error, success, selection, and disabled states without color alone",
+    "Verify WCAG text contrast and visible focus in light and dark themes",
+    "Verify long content and keyboard navigation at 360px and breakpoint boundaries",
+    "Honor reduced motion and prevent unexpected layout shifts"
+  ],
+  "verificationNote": "This document records implementation values and preservation requirements; it does not certify current accessibility or browser-test results."
+}

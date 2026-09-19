@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+work/
+outputs/
+.impeccable/build/
+.impeccable/review/
+.impeccable/surfaces/
+.impeccable/mocks/*
+!.impeccable/mocks/balanced-dual-cards.png
+!.impeccable/mocks/balanced-dual-cards.png.json
+*.log
+.DS_Store
+Thumbs.db

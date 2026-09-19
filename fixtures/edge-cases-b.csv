@@ -1,0 +1,3 @@
+Record ID;Amount;Service date;Comment;B only
+3001;1.234,56;03/04/2026;Ambiguous date and number;Right schema
+3002;801,00;04/05/2026;Manual mapping example;Right schema
