@@ -1,0 +1,7 @@
+dist
+coverage
+node_modules
+work
+outputs
+fixtures/*.xlsx
+fixtures/windows-1251.csv

@@ -1,0 +1,9 @@
+Account ID,Customer,Amount,Invoice Date,Active,Notes
+1001,Northwind Labs,120.00,2026-08-01,true,Paid
+1002,Blue Harbor,125.50,2026-08-02,true,Pending review
+1003,Atlas Retail,89.00,2026-08-03,false,Only in A
+1004,Orchid Foods,42.00,2026-08-04,true,Duplicate first
+1004,Orchid Foods,43.00,2026-08-04,true,Duplicate second
+,Missing Key Ltd,11.00,2026-08-05,true,Missing account
+1005,Case Study,77.00,2026-08-06,true,Trailing spaces
+1006,Formula Safety,9.00,2026-08-07,true,"=2+2"
