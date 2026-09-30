@@ -2,7 +2,9 @@
 
 Reconciler is a local-first web application for comparing two CSV or XLSX files row by row. It guides a non-technical user from file selection through column mapping and comparison rules to an inspectable XLSX report. Source files are never changed or uploaded.
 
-[Open the public GitHub Pages demo](https://uhavenicemom.github.io/reconciler-csv-xlsx/).
+[Open the public GitHub Pages demo](https://dhordii.github.io/reconciler-csv-xlsx/).
+
+Select **Try sample data** to load two synthetic CSV files directly in the browser, then review the mappings and rules, run the comparison, and download the XLSX report. You can also choose your own files.
 
 ## What it does
 

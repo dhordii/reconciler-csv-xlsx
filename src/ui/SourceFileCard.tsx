@@ -5,6 +5,7 @@ const MAX_FILE_BYTES = 50 * 1024 * 1024;
 const ACCEPTED_EXTENSIONS = ['.csv', '.xlsx'];
 
 interface SourceFileCardProps {
+  disabled?: boolean;
   file: File | null;
   label: string;
   onFile: (file: File) => void;
@@ -19,13 +20,13 @@ function validateFile(file: File): string | null {
   return null;
 }
 
-export function SourceFileCard({ file, label, onFile }: SourceFileCardProps) {
+export function SourceFileCard({ disabled = false, file, label, onFile }: SourceFileCardProps) {
   const inputId = useId();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const acceptFile = (candidate: File | undefined) => {
-    if (!candidate) return;
+    if (!candidate || disabled) return;
     const nextError = validateFile(candidate);
     setError(nextError);
     if (!nextError) onFile(candidate);
@@ -34,6 +35,7 @@ export function SourceFileCard({ file, label, onFile }: SourceFileCardProps) {
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
+    if (disabled) return;
     acceptFile(event.dataTransfer.files.item(0) ?? undefined);
   };
 
@@ -59,6 +61,7 @@ export function SourceFileCard({ file, label, onFile }: SourceFileCardProps) {
           accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           aria-label={`${label} upload`}
           className="visually-hidden"
+          disabled={disabled}
           id={inputId}
           onChange={(event) => acceptFile(event.currentTarget.files?.item(0) ?? undefined)}
           type="file"
@@ -66,6 +69,7 @@ export function SourceFileCard({ file, label, onFile }: SourceFileCardProps) {
         <button
           aria-describedby={`${inputId}-help${error ? ` ${inputId}-error` : ''}`}
           className="choose-file"
+          disabled={disabled}
           onClick={() => document.getElementById(inputId)?.click()}
           type="button"
         >

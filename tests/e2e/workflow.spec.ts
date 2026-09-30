@@ -89,6 +89,37 @@ test('reconciles two CSV files and exports a complete workbook', async ({ page }
   expect(consoleErrors).toEqual([]);
 });
 
+test('starts the complete workflow with bundled sample data', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Try sample data' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Confirm how each file is read' })).toBeVisible();
+  await expect(page.getByText('reconciliation-a.csv')).toBeVisible();
+  await expect(page.getByText('reconciliation-b.csv')).toBeVisible();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByText('6 mapped')).toBeVisible();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Continue' }).click();
+  await page.getByRole('button', { name: 'Run reconciliation' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Review the result' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /2\s+Differences/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /4\s+Duplicates/ })).toBeVisible();
+});
+
+test('keeps selected files when sample replacement is cancelled', async ({ page }) => {
+  await page.goto('/');
+  await page
+    .locator('input[type=file][accept*=".csv"]')
+    .first()
+    .setInputFiles(path.resolve('fixtures/edge-cases-a.csv'));
+  page.once('dialog', (dialog) => void dialog.dismiss());
+  await page.getByRole('button', { name: 'Try sample data' }).click();
+
+  await expect(page.getByText('edge-cases-a.csv')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue' })).toBeDisabled();
+});
+
 test('keeps the upload workflow usable at 360px', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/');
