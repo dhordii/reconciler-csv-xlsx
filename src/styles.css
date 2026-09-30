@@ -415,6 +415,34 @@ select {
   gap: 30px;
 }
 
+.sample-demo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  padding: 18px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-accent);
+}
+
+.sample-demo h2 {
+  margin: 0 0 4px;
+  color: var(--ink);
+  font-size: 18px;
+}
+
+.sample-demo p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.sample-demo-button {
+  flex: 0 0 auto;
+}
+
 .source-card {
   height: 482px;
   padding: 37px 37px 40px;
@@ -497,6 +525,11 @@ select {
 
 .choose-file:active {
   transform: translateY(1px);
+}
+
+.choose-file:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .file-help,
@@ -1506,6 +1539,16 @@ select {
 }
 
 @media (max-width: 780px) {
+  .sample-demo {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sample-demo-button {
+    width: 100%;
+  }
+
   .app-header {
     height: 72px;
   }

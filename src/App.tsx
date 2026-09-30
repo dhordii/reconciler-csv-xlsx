@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
+import sampleA from '../fixtures/reconciliation-a.csv?raw';
+import sampleB from '../fixtures/reconciliation-b.csv?raw';
 import { autoMapColumns } from './domain/mappings';
 import type {
   ColumnMapping,
@@ -101,9 +103,12 @@ export function App() {
     }
   };
 
-  const parseBothFiles = async () => {
-    const leftFile = files.a;
-    const rightFile = files.b;
+  const parseBothFiles = async (
+    selectedFiles: Record<SourceSide, File | null> = files,
+    profileToApply: SavedProfile | null | undefined = selectedProfile,
+  ) => {
+    const leftFile = selectedFiles.a;
+    const rightFile = selectedFiles.b;
     if (!leftFile || !rightFile) return;
     setBusy('parsing');
     setError(null);
@@ -114,7 +119,7 @@ export function App() {
         workerClient.parse(rightFile),
       ]);
       setSources({ a: parsedLeft, b: parsedRight });
-      if (selectedProfile) applySelectedProfile(selectedProfile, parsedLeft, parsedRight);
+      if (profileToApply) applySelectedProfile(profileToApply, parsedLeft, parsedRight);
       else setMappings(autoMapColumns(parsedLeft, parsedRight));
       setResult(null);
       setStep(1);
@@ -123,6 +128,19 @@ export function App() {
     } finally {
       setBusy(null);
     }
+  };
+
+  const loadSampleData = () => {
+    if ((files.a || files.b) && !window.confirm('Replace the selected files with synthetic sample data?')) {
+      return;
+    }
+    const sampleFiles = {
+      a: new File([sampleA], 'reconciliation-a.csv', { type: 'text/csv' }),
+      b: new File([sampleB], 'reconciliation-b.csv', { type: 'text/csv' }),
+    };
+    setSelectedProfileId('');
+    setFiles(sampleFiles);
+    void parseBothFiles(sampleFiles, null);
   };
 
   const reparseSource = async (side: SourceSide, settings: Partial<ParseSettings>) => {
@@ -309,15 +327,35 @@ export function App() {
           </div>
         ) : null}
 
+        {step === 0 ? <h1 className="visually-hidden">Compare two CSV or XLSX files</h1> : null}
+
+        {step === 0 ? (
+          <section className="sample-demo" aria-labelledby="sample-demo-title">
+            <div>
+              <h2 id="sample-demo-title">Try a complete example</h2>
+              <p>Compare two synthetic CSV files with differences, duplicate keys, and missing keys.</p>
+            </div>
+            <button
+              className="secondary-button sample-demo-button"
+              disabled={busy !== null}
+              onClick={loadSampleData}
+              type="button"
+            >
+              Try sample data
+            </button>
+          </section>
+        ) : null}
+
         {step === 0 ? (
           <div className="source-grid">
-            <h1 className="visually-hidden">Compare two CSV or XLSX files</h1>
             <SourceFileCard
+              disabled={busy === 'parsing'}
               file={files.a}
               label="File A"
               onFile={(file) => setFiles((current) => ({ ...current, a: file }))}
             />
             <SourceFileCard
+              disabled={busy === 'parsing'}
               file={files.b}
               label="File B"
               onFile={(file) => setFiles((current) => ({ ...current, b: file }))}
