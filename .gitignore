@@ -1,4 +1,6 @@
 node_modules/
+.pnpm-store/
+.upstream-reconciler/
 dist/
 coverage/
 playwright-report/

@@ -14,20 +14,20 @@ The primary user is a non-technical operations, finance, or accounting specialis
 
 ## Product Purpose
 
-Reconciler compares two CSV or XLSX files row by row using a user-selected single or composite key. It separates exact matches, differences, records found only on one side, duplicate keys, and rows with missing keys. Success means a user can configure a recurring reconciliation without code, review exceptions, and export a traceable XLSX report without altering either source file.
+Reconciler compares two CSV or XLSX files row by row using a user-selected single or composite key. It separates exact matches, differences, records found only on one side, duplicate keys, and rows with missing keys. Success means a user can configure a recurring reconciliation without code, resolve every exception, and export a corrected copy in the chosen source file's format without altering either original file.
 
 ## Positioning
 
-Reconciler makes every matching and comparison rule explicit before it runs. It preserves the original values, isolates ambiguous records instead of guessing, and records enough provenance to trace each reported result back to its source row.
+Reconciler makes every matching, comparison, and resolution decision explicit. It preserves the original values, isolates ambiguous records instead of guessing, and shows enough provenance to trace each choice back to its source cell or row.
 
 ## Operating Context
 
-Users work with recurring CSV and XLSX extracts. A run follows a guided flow: upload two files, select worksheets and header rows, map columns, choose key columns, set comparison rules, review the configuration, run reconciliation, inspect results, and download a complete XLSX report. Profiles can be reused or transferred as JSON, but never contain source records or prior results.
+Users work with recurring CSV and XLSX extracts. A run follows a guided flow: upload two files, select worksheets and header rows, map columns, choose key columns, set comparison rules, review the configuration, run reconciliation, resolve the exceptions, preview the output, and download a reconciled copy. Profiles can be reused or transferred as JSON, but never contain source records, prior results, or resolution decisions.
 
 ## Capabilities and Constraints
 
 - Local browser processing only. No backend, analytics, CDN, external fonts, or runtime API calls.
-- English interface and report labels. Source column names remain unchanged.
+- English interface labels. Source column names remain unchanged.
 - Current Chrome, Edge, Firefox, and Safari.
 - Responsive operation from 360px, with searchable virtualized result cards and expandable full-record detail on every screen size.
 - Light and dark themes, initially following the system preference.
@@ -40,10 +40,12 @@ Users work with recurring CSV and XLSX extracts. A run follows a guided flow: up
 - Date and number formats require confirmation when ambiguous.
 - Numeric columns support absolute and relative tolerances, both zero by default.
 - Blank values equal only blank values.
-- Source files are never modified. MVP does not merge or correct data.
+- Source files are never modified. The exported copy can combine explicitly selected values and rows from both files.
 - Results support search by key, category and changed-column filters, sorting, and virtualized rendering.
-- The XLSX report always contains the complete run, regardless of active UI filters. Exact matches are optional and excluded by default.
-- Each reported record identifies its source file, worksheet, and original row number.
+- Every changed cell requires File A, File B, or a custom value. Unmatched, duplicate, and missing-key rows require an explicit keep/exclude decision.
+- File A or File B is selected as the output base. Its format and column structure are retained; active UI filters never limit the export.
+- Export remains disabled until all exceptions are resolved, and an output preview is available before download.
+- Each exception identifies its source file, worksheet, row number, and source cell where applicable.
 - Target limit per source is 50 MB, 100,000 rows, or 2 million cells, whichever is reached first.
 - Reconciliation targets 30 seconds on a documented modern-laptop benchmark, keeps the interface responsive, reports progress, and supports cancellation.
 - GitHub Pages is the intended static host. Publishing remains an explicitly gated external action.

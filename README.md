@@ -1,10 +1,10 @@
 # Reconciler
 
-Reconciler is a local-first web application for comparing two CSV or XLSX files row by row. It guides a non-technical user from file selection through column mapping and comparison rules to an inspectable XLSX report. Source files are never changed or uploaded.
+Reconciler is a local-first web application for comparing two CSV or XLSX files row by row. It guides a non-technical user from file selection through comparison, exception resolution, and export of a reconciled copy. Source files are never changed or uploaded.
 
 [Open the public GitHub Pages demo](https://dhordii.github.io/reconciler-csv-xlsx/).
 
-Select **Try sample data** to load two synthetic CSV files directly in the browser, then review the mappings and rules, run the comparison, and download the XLSX report. You can also choose your own files.
+Select **Try sample data** to load two synthetic CSV files directly in the browser, then review the mappings and rules, run the comparison, resolve the exceptions, and download the reconciled CSV. You can also choose your own files.
 
 ## What it does
 
@@ -16,14 +16,15 @@ Select **Try sample data** to load two synthetic CSV files directly in the brows
 - Compares text, numbers, dates, and booleans with explicit per-column rules.
 - Shows exact matches, differences, records found only in A or B, duplicates, and missing keys.
 - Provides search, changed-column filtering, sorting, virtualized result rendering, and expandable full records.
-- Exports a complete, styled XLSX report. UI filters never remove rows from the export.
+- Lets the user keep File A, File B, or a custom value for every changed cell and make explicit decisions for unmatched, duplicate, and missing-key rows.
+- Exports a reconciled copy in the selected base file's CSV or XLSX format. UI filters never remove decisions from the export.
 - Saves reusable profiles containing column names and rules only—never source rows or results.
 
 ## Privacy model
 
 There is no backend, runtime API call, analytics service, CDN, or remote font request. Parsing and reconciliation run in a Web Worker on the user's device. Profiles are stored in browser `localStorage`; source records and results are not persisted there.
 
-The generated report is created in the browser and downloaded directly. Formula-like source text is exported as text, not as an executable spreadsheet formula.
+The reconciled copy is created in the browser and downloaded directly. The imported files remain untouched.
 
 ## Quick start
 
@@ -52,7 +53,7 @@ pnpm preview
 3. **Match columns:** review automatic mappings, add manual mappings, and choose one or more key columns.
 4. **Set rules:** keep strict defaults or explicitly enable text normalization, numeric tolerance, and date/number formats.
 5. **Review & run:** confirm the source sizes, key, compared fields, and safety properties. The run reports progress and can be cancelled.
-6. **Results:** review categories and provenance, search/filter/sort, expand complete records, and download the XLSX report.
+6. **Resolve & export:** choose the retained value or row for every exception, preview the output, and download a reconciled copy based on File A or File B.
 
 ## Supported inputs and limits
 
@@ -66,7 +67,7 @@ pnpm preview
 | Browsers  | Current Chrome, Edge, Firefox, and Safari                                              |
 | Layout    | Responsive from 360 px; light, dark, and system themes                                 |
 
-Legacy `.xls`, macros, password-protected workbooks, formula recalculation, fuzzy matching, editing, and data merging are intentionally outside the MVP.
+Legacy `.xls`, macros, password-protected workbooks, formula recalculation, fuzzy matching, and automatic conflict resolution are intentionally outside the MVP.
 
 When an XLSX formula does not contain a cached result, the cell is treated as blank and the application shows a warning. Recalculate and save the workbook in a spreadsheet application before comparing if that value is required.
 
@@ -80,20 +81,16 @@ When an XLSX formula does not contain a cached result, the cell is treated as bl
 - Keys have their own optional text normalization rules.
 - A key duplicated on either side is excluded from automatic one-to-one pairing. All rows for that key are reported together.
 
-## XLSX report
+## Reconciled export
 
-The report contains:
+The Results step requires an explicit decision for every exception before export:
 
-- `Summary`
-- `Run details`
-- `Differences`
-- `Only A`
-- `Only B`
-- `Duplicates`
-- `Missing key`
-- optional `Matches`
+- changed cells can keep the File A value, keep the File B value, or use a custom value;
+- rows found on only one side and rows with missing keys can be included or excluded;
+- duplicate groups can keep the rows from File A, keep the rows from File B, or be excluded;
+- exact matches are retained automatically.
 
-The run details include the selected files, worksheets, header rows, duration, mappings, and exact rules. Record sheets include source file, worksheet, and original row provenance. Exact matches are excluded by default to keep reports smaller.
+File A or File B can be selected as the output base. The base determines the output columns, file type, CSV dialect and encoding, or XLSX workbook structure. XLSX export changes selected cells and rows in the chosen worksheet while retaining other worksheets and unaffected workbook content. Export is blocked until all exceptions have a decision, and the original files are never modified.
 
 ## Profiles
 
@@ -117,7 +114,7 @@ Run the deterministic quality suite:
 pnpm check
 ```
 
-This checks formatting, lint rules, TypeScript, 14 unit/integration tests, the 100,000-row-per-side reconciliation budget, cancellation safety, and the production build.
+This checks formatting, lint rules, TypeScript, unit and integration tests, the 100,000-row-per-side reconciliation budget, cancellation safety, reconciled CSV/XLSX output, and the production build.
 
 Run Chromium end-to-end tests:
 
@@ -125,7 +122,7 @@ Run Chromium end-to-end tests:
 pnpm test:e2e
 ```
 
-The browser suite covers the complete CSV journey, an inspected XLSX download, XLSX formula warnings, 360 px and mobile Results layouts, expandable exception records, keyboard navigation, console errors, and automated accessibility checks in light and dark themes.
+The browser suite covers the complete CSV resolution journey, an inspected reconciled download, XLSX formula warnings, 360 px and mobile Results layouts, expandable exception records, keyboard navigation, console errors, and automated accessibility checks in light and dark themes.
 
 For the full current-browser matrix, install Playwright browsers once and run:
 
@@ -137,11 +134,11 @@ pnpm test:e2e:all
 ## Architecture
 
 - `src/adapters/parseFile.ts` validates limits and converts CSV/XLSX files into a shared typed source model.
-- `src/domain/` contains deterministic mapping, normalization, and reconciliation logic without React or browser side effects.
+- `src/domain/` contains deterministic mapping, normalization, reconciliation, and resolution logic without React or browser side effects.
 - `src/workers/` and `src/services/workerClient.ts` isolate parsing and reconciliation from the UI, including progress and cancellation.
-- `src/reporting/report.ts` builds the traceable XLSX workbook and is loaded only when export is requested.
+- `src/services/reconciledExport.ts` reconstructs a reconciled CSV or XLSX copy from the selected base file and is loaded only when export is requested.
 - `src/profiles/profiles.ts` validates and stores configuration-only profiles.
-- `src/ui/` contains the guided workflow and virtualized result review.
+- `src/ui/` contains the guided workflow and virtualized exception-resolution interface.
 
 ## Deployment
 

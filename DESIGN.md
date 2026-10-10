@@ -1,6 +1,6 @@
 # Reconciler UI maintenance guide
 
-Reconciler uses a calm, precise enterprise workflow: upload two sources, select data, match fields, configure rules, review, and inspect results. Preserve the balanced source cards, visible step progression, and clear primary action. Runtime styles in `src/styles.css` are authoritative for implementation values; this guide records the durable design intent.
+Reconciler uses a calm, precise enterprise workflow: upload two sources, select data, match fields, configure rules, review, resolve exceptions, and export a reconciled copy. Preserve the balanced source cards, visible step progression, and clear primary action. Runtime styles in `src/styles.css` are authoritative for implementation values; this guide records the durable design intent.
 
 ## Visual foundations
 
@@ -26,4 +26,4 @@ Workflow entry uses a restrained 240ms vertical reveal from 10px with `cubic-bez
 
 ## Verification when changing the UI
 
-Inspect upload, loaded, processing, error/recovery, mapping/rules, review, and results states. Verify keyboard focus, reduced motion, light/dark/system themes, long filenames and labels, and 360px/mobile/tablet/desktop widths. Confirm that previews, counters, and exports match actual data. Build-state review records provide historical visual evidence; rerun relevant checks after changes rather than treating the recorded ship disposition as a current test result.
+Inspect upload, loaded, processing, error/recovery, mapping/rules, review, unresolved/resolved results, output preview, and export states. Verify keyboard focus, reduced motion, light/dark/system themes, long filenames and labels, and 360px/mobile/tablet/desktop widths. Confirm that source-cell addresses, decisions, progress, previews, and exports match actual data. Build-state review records provide historical visual evidence; rerun relevant checks after changes rather than treating the recorded ship disposition as a current test result.

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import sampleA from '../fixtures/reconciliation-a.csv?raw';
 import sampleB from '../fixtures/reconciliation-b.csv?raw';
 import { autoMapColumns } from './domain/mappings';
+import type { ResolutionDecisions } from './domain/resolution';
 import type {
   ColumnMapping,
   ParseSettings,
@@ -53,7 +54,7 @@ function useTheme() {
 }
 
 function safeFileName(value: string): string {
-  return value.replace(/[^a-z0-9_-]+/giu, '-').replace(/^-+|-+$/gu, '') || 'reconciliation';
+  return value.replace(/[^\p{L}\p{N}_-]+/gu, '-').replace(/^-+|-+$/gu, '') || 'reconciliation';
 }
 
 export function App() {
@@ -187,19 +188,27 @@ export function App() {
       });
   };
 
-  const exportReport = async (includeMatches: boolean) => {
-    if (!left || !right || !result) return;
+  const exportReconciledFile = async (baseSide: SourceSide, decisions: ResolutionDecisions) => {
+    const baseFile = files[baseSide];
+    if (!left || !right || !result || !baseFile) return;
     setBusy('exporting');
     setError(null);
     try {
-      const { buildReconciliationReport } = await import('./reporting/report');
-      const blob = await buildReconciliationReport(left, right, { mappings }, result, { includeMatches });
-      const date = result.completedAt.slice(0, 10);
-      downloadBlob(
-        blob,
-        `${safeFileName(left.meta.fileName)}-vs-${safeFileName(right.meta.fileName)}-${date}.xlsx`,
+      const { buildReconciledFile } = await import('./services/reconciledExport');
+      const exported = await buildReconciledFile(
+        baseFile,
+        left,
+        right,
+        mappings,
+        result,
+        baseSide,
+        decisions,
       );
-      setNotice('The complete XLSX report was created. Active filters did not limit the export.');
+      const baseName = baseFile.name.replace(/\.(?:csv|xlsx)$/iu, '');
+      downloadBlob(exported.blob, `${safeFileName(baseName)}-reconciled.${exported.extension}`);
+      setNotice(
+        `The reconciled ${exported.extension.toUpperCase()} copy was created. Your original files were not changed.`,
+      );
     } catch (exportError) {
       setError(exportError instanceof Error ? exportError.message : String(exportError));
     } finally {
@@ -289,6 +298,14 @@ export function App() {
     else if (step === 4) startReconciliation();
   };
 
+  const navigateToCompletedStep = (targetStep: number) => {
+    if (targetStep >= step || busy !== null || busySide !== null) return;
+    setError(null);
+    setNotice(null);
+    if (result) setResult(null);
+    setStep(targetStep);
+  };
+
   const keyCount = mappings.filter((mapping) => mapping.key).length;
   const nextDisabled =
     (step === 0 && (!files.a || !files.b)) ||
@@ -315,7 +332,11 @@ export function App() {
       />
 
       <main className={`workflow-shell step-${step}`} id="main-workflow">
-        <WorkflowStepper current={step} />
+        <WorkflowStepper
+          current={step}
+          disabled={busy !== null || busySide !== null}
+          onNavigate={navigateToCompletedStep}
+        />
         {error ? (
           <div className="global-message error-message" role="alert">
             {error}
@@ -389,7 +410,7 @@ export function App() {
               setNotice('Previous result cleared. Update the rules, then review and run again.');
               setStep(3);
             }}
-            onExport={(include) => void exportReport(include)}
+            onExport={(baseSide, decisions) => void exportReconciledFile(baseSide, decisions)}
             result={result}
             right={right}
           />
