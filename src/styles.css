@@ -499,9 +499,7 @@ button.step-control:disabled {
   border: 2px dashed var(--border);
   border-radius: 10px;
   background: var(--surface);
-  transition:
-    border-color 160ms ease-out,
-    background 160ms ease-out;
+  transition: border-color 160ms ease-out;
 }
 
 .drop-zone:hover,
@@ -542,10 +540,7 @@ button.step-control:disabled {
   font-weight: 700;
   line-height: 1;
   cursor: pointer;
-  transition:
-    color 140ms ease-out,
-    background 140ms ease-out,
-    transform 140ms ease-out;
+  transition: transform 140ms ease-out;
 }
 
 .choose-file:hover {
