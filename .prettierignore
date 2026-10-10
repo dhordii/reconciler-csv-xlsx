@@ -1,6 +1,8 @@
 dist
 coverage
 node_modules
+.pnpm-store
+.upstream-reconciler
 work
 outputs
 fixtures/*.xlsx

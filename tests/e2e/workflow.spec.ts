@@ -1,9 +1,9 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
-import ExcelJS from 'exceljs';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-test('reconciles two CSV files and exports a complete workbook', async ({ page }) => {
+test('reconciles two CSV files, resolves every exception, and exports a corrected copy', async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text());
@@ -26,7 +26,7 @@ test('reconciles two CSV files and exports a complete workbook', async ({ page }
   await expect(page.getByRole('heading', { name: 'Review before running' })).toBeVisible();
   await page.getByRole('button', { name: 'Run reconciliation' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Review the result' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Resolve differences' })).toBeVisible();
   await expect(page.getByRole('button', { name: /2\s+Differences/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /4\s+Duplicates/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /2\s+Missing key/ })).toBeVisible();
@@ -45,27 +45,41 @@ test('reconciles two CSV files and exports a complete workbook', async ({ page }
   await expect(firstDetails).toHaveAttribute('open', '');
   await expect(firstDetails.getByText('Customer')).toBeVisible();
 
+  await page.getByRole('button', { name: 'Use File B values' }).click();
+  await expect(page.getByText('2 of 7 resolved')).toBeVisible();
+
+  await page.getByRole('button', { name: /1\s+Only A/ }).click();
+  await page.getByRole('button', { name: 'Include row' }).click();
+  await page.getByRole('button', { name: /1\s+Only B/ }).click();
+  await page.getByRole('button', { name: 'Include row' }).click();
+
   await page.getByRole('button', { name: /4\s+Duplicates/ }).click();
   const duplicateDetails = page.locator('details.result-details').first();
   await duplicateDetails.getByText('View all duplicate rows').click();
   await expect(duplicateDetails.getByRole('heading', { name: 'File A · source row 5' })).toBeVisible();
+  await page.getByRole('button', { name: 'Keep File A rows' }).click();
+
+  await page.getByRole('button', { name: /2\s+Missing key/ }).click();
+  const excludeMissing = page.getByRole('button', { name: 'Exclude row' });
+  await excludeMissing.nth(0).click();
+  await excludeMissing.nth(1).click();
+  await expect(page.getByText('7 of 7 resolved')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Preview output' }).click();
+  await expect(page.getByRole('heading', { name: 'Output preview' })).toBeVisible();
+  await expect(page.getByRole('dialog')).toContainText('New Market');
+  await page.getByRole('button', { name: 'Close output preview' }).click();
 
   const downloadPromise = page.waitForEvent('download');
-  await page.getByRole('button', { name: 'Download XLSX report' }).click();
+  await page.getByRole('button', { name: 'Download reconciled CSV' }).click();
   const download = await downloadPromise;
   const downloadPath = await download.path();
   expect(downloadPath).toBeTruthy();
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(downloadPath ?? '');
-  expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
-    'Summary',
-    'Run details',
-    'Differences',
-    'Only A',
-    'Only B',
-    'Duplicates',
-    'Missing key',
-  ]);
+  const exportedCsv = await readFile(downloadPath ?? '', 'utf8');
+  expect(exportedCsv).toContain('1002,Blue Harbor,126');
+  expect(exportedCsv).toContain('1005,case study,77');
+  expect(exportedCsv).toContain('1007,New Market,55');
+  expect(exportedCsv).not.toContain('Missing Key Ltd');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByLabel('Changed column')).toBeVisible();
@@ -85,7 +99,7 @@ test('reconciles two CSV files and exports a complete workbook', async ({ page }
 
   await page.getByRole('button', { name: 'Edit rules' }).click();
   await expect(page.getByRole('heading', { name: 'Set comparison rules' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Download XLSX report' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Download reconciled CSV' })).toHaveCount(0);
   expect(consoleErrors).toEqual([]);
 });
 
@@ -102,9 +116,14 @@ test('starts the complete workflow with bundled sample data', async ({ page }) =
   await page.getByRole('button', { name: 'Continue' }).click();
   await page.getByRole('button', { name: 'Run reconciliation' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Review the result' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Resolve differences' })).toBeVisible();
   await expect(page.getByRole('button', { name: /2\s+Differences/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /4\s+Duplicates/ })).toBeVisible();
+
+  const stepper = page.getByRole('navigation', { name: 'Reconciliation progress' });
+  await stepper.getByRole('button', { name: 'Match columns' }).click();
+  await expect(page.getByRole('heading', { name: 'Match the columns' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Download reconciled CSV' })).toHaveCount(0);
 });
 
 test('keeps selected files when sample replacement is cancelled', async ({ page }) => {

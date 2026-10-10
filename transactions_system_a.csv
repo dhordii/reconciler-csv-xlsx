@@ -1,0 +1,8 @@
+﻿transaction_id,transaction_date,account,description,amount,currency,status
+TXN-1001,2026-09-01,ACC-100,Office supplies,1250.50,UAH,posted
+TXN-1002,2026-09-02,ACC-200,Customer payment,5200.00,UAH,posted
+TXN-1003,2026-09-03,ACC-300,Bank fee,-45.00,UAH,posted
+TXN-1004,2026-09-04,ACC-400,"Cloud subscription, September",899.99,UAH,posted
+TXN-1005,2026-09-05,ACC-100,Refund from vendor,-450.00,UAH,posted
+TXN-1006,2026-09-07,ACC-500,Travel expense,1320.40,UAH,posted
+TXN-1008,2026-09-09,ACC-100,,0.00,UAH,pending

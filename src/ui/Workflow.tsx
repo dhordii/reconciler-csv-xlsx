@@ -25,22 +25,49 @@ const NORMALIZATION_TOGGLES = [
   { label: 'Ignore letter case', property: 'caseInsensitive' },
 ] as const;
 
-export function WorkflowStepper({ current }: { current: number }) {
+interface WorkflowStepperProps {
+  current: number;
+  disabled?: boolean;
+  onNavigate: (step: number) => void;
+}
+
+export function WorkflowStepper({ current, disabled, onNavigate }: WorkflowStepperProps) {
   return (
     <nav aria-label="Reconciliation progress" className="stepper">
       <ol>
-        {STEP_LABELS.map((step, index) => (
-          <li
-            className={index < current ? 'is-complete' : ''}
-            aria-current={index === current ? 'step' : undefined}
-            key={step}
-          >
-            <span className="step-node" aria-hidden="true">
-              {index < current ? <Check size={18} strokeWidth={2.5} /> : index + 1}
-            </span>
-            <span className="step-label">{step}</span>
-          </li>
-        ))}
+        {STEP_LABELS.map((step, index) => {
+          const complete = index < current;
+          const content = (
+            <>
+              <span className="step-node" aria-hidden="true">
+                {complete ? <Check size={18} strokeWidth={2.5} /> : index + 1}
+              </span>
+              <span className="step-label">{step}</span>
+            </>
+          );
+
+          return (
+            <li
+              className={complete ? 'is-complete' : ''}
+              aria-current={index === current ? 'step' : undefined}
+              key={step}
+            >
+              {complete ? (
+                <button
+                  aria-label={step}
+                  className="step-control"
+                  disabled={disabled}
+                  onClick={() => onNavigate(index)}
+                  type="button"
+                >
+                  {content}
+                </button>
+              ) : (
+                <span className="step-control">{content}</span>
+              )}
+            </li>
+          );
+        })}
       </ol>
     </nav>
   );
