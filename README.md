@@ -145,6 +145,6 @@ pnpm test:e2e:all
 The Vite build uses relative asset paths and is ready for a static GitHub Pages host. The repository includes two workflows:
 
 - `CI` runs quality and browser checks on pushes and pull requests.
-- `Deploy GitHub Pages` is manual-only (`workflow_dispatch`). It verifies the selected revision before deploying `dist/`.
+- `Deploy GitHub Pages` is manual-only (`workflow_dispatch`). It runs the full quality suite and Chromium end-to-end smoke test for the selected revision before deploying `dist/`.
 
 No deployment is performed by local setup or by a push alone. In GitHub, choose **Actions → Deploy GitHub Pages → Run workflow** only after reviewing the intended revision and successful CI.
