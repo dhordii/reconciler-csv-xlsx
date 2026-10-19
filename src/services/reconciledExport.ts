@@ -6,6 +6,7 @@ import {
   type ResolutionDecisions,
   type ResolvedOutputRow,
 } from '../domain/resolution';
+import { isFormulaLikeValue, makeSpreadsheetSafe, type CsvFormulaMode } from '../domain/spreadsheetSafety';
 import type {
   CellValue,
   ColumnMapping,
@@ -94,6 +95,11 @@ const WINDOWS_1251_BYTES = new Map(
 export interface ReconciledFile {
   blob: Blob;
   extension: 'csv' | 'xlsx';
+  protectedCellCount: number;
+}
+
+export interface ReconciledExportOptions {
+  csvFormulaMode?: CsvFormulaMode;
 }
 
 function encodeWindows1251(value: string): Uint8Array {
@@ -122,6 +128,7 @@ async function buildCsvFile(
   baseFile: File,
   base: ParsedSource,
   rows: ResolvedOutputRow[],
+  formulaMode: CsvFormulaMode,
 ): Promise<ReconciledFile> {
   const originalBytes = await baseFile.arrayBuffer();
   const encoding = base.meta.detectedEncoding ?? 'utf-8';
@@ -140,11 +147,18 @@ async function buildCsvFile(
 
   const prefix = parsed.data.slice(0, base.settings.headerRow);
   const body = rows.map((row) => base.columns.map((column) => row.values[column.id] ?? null));
+  let protectedCellCount = 0;
+  const outputRows = [...prefix, ...body].map((row) =>
+    row.map((value) => {
+      if (formulaMode === 'safe' && isFormulaLikeValue(value)) protectedCellCount += 1;
+      return formulaMode === 'safe' ? makeSpreadsheetSafe(value) : value;
+    }),
+  );
   const newline = sourceText.includes('\r\n') ? '\r\n' : sourceText.includes('\r') ? '\r' : '\n';
   const trailingNewline = /(?:\r\n|\r|\n)$/u.test(sourceText);
-  const serialized = Papa.unparse([...prefix, ...body], { delimiter, newline });
+  const serialized = Papa.unparse(outputRows, { delimiter, newline });
   const output = `${hasBom && encoding === 'utf-8' ? '\ufeff' : ''}${serialized}${trailingNewline ? newline : ''}`;
-  return { blob: csvBlob(output, encoding), extension: 'csv' };
+  return { blob: csvBlob(output, encoding), extension: 'csv', protectedCellCount };
 }
 
 function serializableClone<T>(value: T): T {
@@ -215,7 +229,7 @@ async function buildXlsxFile(
   workbook.modified = new Date();
   const buffer = await workbook.xlsx.writeBuffer();
   const bytes = new Uint8Array(buffer as unknown as ArrayBuffer);
-  return { blob: new Blob([bytes], { type: XLSX_MIME }), extension: 'xlsx' };
+  return { blob: new Blob([bytes], { type: XLSX_MIME }), extension: 'xlsx', protectedCellCount: 0 };
 }
 
 export async function buildReconciledFile(
@@ -226,8 +240,11 @@ export async function buildReconciledFile(
   result: ReconciliationResult,
   baseSide: SourceSide,
   decisions: ResolutionDecisions,
+  options: ReconciledExportOptions = {},
 ): Promise<ReconciledFile> {
   const plan = buildResolvedExportPlan(left, right, mappings, result, baseSide, decisions);
-  if (plan.base.meta.kind === 'csv') return buildCsvFile(baseFile, plan.base, plan.rows);
+  if (plan.base.meta.kind === 'csv') {
+    return buildCsvFile(baseFile, plan.base, plan.rows, options.csvFormulaMode ?? 'safe');
+  }
   return buildXlsxFile(baseFile, plan.base, plan);
 }

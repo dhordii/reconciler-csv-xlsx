@@ -70,8 +70,11 @@ test('reconciles two CSV files, resolves every exception, and exports a correcte
   await expect(page.getByRole('dialog')).toContainText('New Market');
   await page.getByRole('button', { name: 'Close output preview' }).click();
 
-  const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download reconciled CSV' }).click();
+  const formulaDialog = page.getByRole('dialog', { name: 'Potential spreadsheet formulas found' });
+  await expect(formulaDialog).toContainText('formula-like cell');
+  const downloadPromise = page.waitForEvent('download');
+  await formulaDialog.getByRole('button', { name: 'Download safe CSV' }).click();
   const download = await downloadPromise;
   const downloadPath = await download.path();
   expect(downloadPath).toBeTruthy();
@@ -79,6 +82,8 @@ test('reconciles two CSV files, resolves every exception, and exports a correcte
   expect(exportedCsv).toContain('1002,Blue Harbor,126');
   expect(exportedCsv).toContain('1005,case study,77');
   expect(exportedCsv).toContain('1007,New Market,55');
+  expect(exportedCsv).toContain("'=2+2");
+  expect(exportedCsv).not.toMatch(/(^|,)=2\+2(?:,|$)/m);
   expect(exportedCsv).not.toContain('Missing Key Ltd');
 
   await page.setViewportSize({ width: 390, height: 844 });

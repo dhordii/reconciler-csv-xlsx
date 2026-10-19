@@ -1640,6 +1640,39 @@ button.step-control:disabled {
   box-shadow: 0 28px 70px rgb(0 0 0 / 28%);
 }
 
+.formula-warning-dialog {
+  width: min(560px, 100%);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  color: var(--ink);
+  background: var(--surface);
+  box-shadow: 0 28px 70px rgb(0 0 0 / 28%);
+}
+
+.formula-warning-dialog h2,
+.formula-warning-dialog p {
+  margin: 0;
+}
+
+.formula-warning-dialog p {
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.formula-warning-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.formula-warning-actions .primary-button {
+  min-height: 48px;
+  font-size: 16px;
+}
+
 .output-preview > header {
   display: flex;
   align-items: flex-start;
@@ -2101,6 +2134,15 @@ button.step-control:disabled {
   .output-preview {
     max-height: calc(100vh - 32px);
     padding: 16px;
+  }
+
+  .formula-warning-dialog {
+    padding: 20px;
+  }
+
+  .formula-warning-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .record-values {
