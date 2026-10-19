@@ -4,6 +4,7 @@ import sampleA from '../fixtures/reconciliation-a.csv?raw';
 import sampleB from '../fixtures/reconciliation-b.csv?raw';
 import { autoMapColumns } from './domain/mappings';
 import type { ResolutionDecisions } from './domain/resolution';
+import type { CsvFormulaMode } from './domain/spreadsheetSafety';
 import type {
   ColumnMapping,
   ParseSettings,
@@ -188,7 +189,11 @@ export function App() {
       });
   };
 
-  const exportReconciledFile = async (baseSide: SourceSide, decisions: ResolutionDecisions) => {
+  const exportReconciledFile = async (
+    baseSide: SourceSide,
+    decisions: ResolutionDecisions,
+    csvFormulaMode: CsvFormulaMode = 'safe',
+  ) => {
     const baseFile = files[baseSide];
     if (!left || !right || !result || !baseFile) return;
     setBusy('exporting');
@@ -203,11 +208,16 @@ export function App() {
         result,
         baseSide,
         decisions,
+        { csvFormulaMode },
       );
       const baseName = baseFile.name.replace(/\.(?:csv|xlsx)$/iu, '');
       downloadBlob(exported.blob, `${safeFileName(baseName)}-reconciled.${exported.extension}`);
+      const protectionNotice =
+        exported.protectedCellCount > 0
+          ? ` ${exported.protectedCellCount.toLocaleString()} formula-like ${exported.protectedCellCount === 1 ? 'cell was' : 'cells were'} prefixed with an apostrophe for safer spreadsheet opening.`
+          : '';
       setNotice(
-        `The reconciled ${exported.extension.toUpperCase()} copy was created. Your original files were not changed.`,
+        `The reconciled ${exported.extension.toUpperCase()} copy was created. Your original files were not changed.${protectionNotice}`,
       );
     } catch (exportError) {
       setError(exportError instanceof Error ? exportError.message : String(exportError));
@@ -410,7 +420,9 @@ export function App() {
               setNotice('Previous result cleared. Update the rules, then review and run again.');
               setStep(3);
             }}
-            onExport={(baseSide, decisions) => void exportReconciledFile(baseSide, decisions)}
+            onExport={(baseSide, decisions, csvFormulaMode) =>
+              void exportReconciledFile(baseSide, decisions, csvFormulaMode)
+            }
             result={result}
             right={right}
           />

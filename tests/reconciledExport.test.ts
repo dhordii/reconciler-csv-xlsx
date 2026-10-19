@@ -68,6 +68,43 @@ describe('reconciled file export', () => {
     expect(output).toBe('ID;Amount\r\n1;11\r\n3;30\r\n');
   });
 
+  it('protects formula-like CSV values by default and keeps original export behind an explicit mode', async () => {
+    const text = 'ID,Value\n1,=1+1\n2,+2\n3,-3\n4,@SUM(A1)\n5,"  ＝cmd"\n6,"\t＠cmd"\n';
+    const fileA = fileFromBytes('a.csv', new TextEncoder().encode(text));
+    const fileB = fileFromBytes('b.csv', new TextEncoder().encode(text));
+    const [left, right] = await Promise.all([parseFile(fileA), parseFile(fileB)]);
+    const configMappings = mappings(left, right);
+    configMappings[1]!.rule = {
+      caseInsensitive: false,
+      collapseWhitespace: false,
+      kind: 'text',
+      trim: false,
+    };
+    const result = await reconcileSources(left, right, { mappings: configMappings });
+
+    const safe = await buildReconciledFile(fileA, left, right, configMappings, result, 'a', {});
+    const original = await buildReconciledFile(
+      fileA,
+      left,
+      right,
+      configMappings,
+      result,
+      'a',
+      {},
+      {
+        csvFormulaMode: 'original',
+      },
+    );
+
+    expect(safe.protectedCellCount).toBe(6);
+    expect(await safe.blob.text()).toContain("1,'=1+1");
+    expect(await safe.blob.text()).toContain("5,'  ＝cmd");
+    expect(original.protectedCellCount).toBe(0);
+    expect(await original.blob.text()).toContain('1,=1+1');
+    expect(await original.blob.text()).toContain('6,\t＠cmd');
+    expect((await original.blob.text()).includes("'=1+1")).toBe(false);
+  });
+
   it('updates only resolved XLSX cells while preserving other sheets and formulas', async () => {
     const workbookA = new ExcelJS.Workbook();
     const dataA = workbookA.addWorksheet('Data');

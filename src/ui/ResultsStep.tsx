@@ -12,6 +12,7 @@ import {
   type ResolutionDecision,
   type ResolutionDecisions,
 } from '../domain/resolution';
+import { countFormulaLikeValues, type CsvFormulaMode } from '../domain/spreadsheetSafety';
 import type {
   ColumnMapping,
   DuplicateGroup,
@@ -38,7 +39,7 @@ interface ResultsStepProps {
   left: ParsedSource;
   mappings: ColumnMapping[];
   onEditRules: () => void;
-  onExport: (baseSide: SourceSide, decisions: ResolutionDecisions) => void;
+  onExport: (baseSide: SourceSide, decisions: ResolutionDecisions, csvFormulaMode?: CsvFormulaMode) => void;
   result: ReconciliationResult;
   right: ParsedSource;
 }
@@ -422,6 +423,9 @@ export function ResultsStep({
   const [baseSide, setBaseSide] = useState<SourceSide>('a');
   const [decisions, setDecisions] = useState<ResolutionDecisions>({});
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [formulaWarningCount, setFormulaWarningCount] = useState<number | null>(null);
+  const exportButtonRef = useRef<HTMLButtonElement>(null);
+  const formulaDialogRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const items = useMemo<ResultItem[]>(() => {
@@ -490,6 +494,24 @@ export function ResultsStep({
       return next;
     });
   };
+  const requestExport = () => {
+    if (base.meta.kind === 'xlsx') {
+      onExport(baseSide, decisions);
+      return;
+    }
+    const rows = buildResolvedRows(left, right, mappings, result, baseSide, decisions);
+    const values = [
+      ...base.columns.map((column) => column.name),
+      ...rows.flatMap((row) => base.columns.map((column) => row.values[column.id] ?? null)),
+    ];
+    const warningCount = countFormulaLikeValues(values);
+    if (warningCount > 0) setFormulaWarningCount(warningCount);
+    else onExport(baseSide, decisions, 'safe');
+  };
+  const closeFormulaWarning = () => {
+    setFormulaWarningCount(null);
+    requestAnimationFrame(() => exportButtonRef.current?.focus());
+  };
 
   return (
     <div className="step-content results-content">
@@ -511,7 +533,8 @@ export function ResultsStep({
           <button
             className="primary-button export-button"
             disabled={exporting || !progress.complete}
-            onClick={() => onExport(baseSide, decisions)}
+            onClick={requestExport}
+            ref={exportButtonRef}
             type="button"
           >
             <Download size={18} />
@@ -722,6 +745,72 @@ export function ResultsStep({
               </table>
             </div>
             {previewRows.length > 50 ? <p>Showing the first 50 rows.</p> : null}
+          </section>
+        </div>
+      ) : null}
+      {formulaWarningCount !== null ? (
+        <div
+          aria-labelledby="formula-warning-title"
+          aria-modal="true"
+          className="preview-backdrop"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              closeFormulaWarning();
+              return;
+            }
+            if (event.key !== 'Tab') return;
+            const buttons =
+              formulaDialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+            if (!buttons || buttons.length === 0) return;
+            const first = buttons[0];
+            const last = buttons[buttons.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last?.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first?.focus();
+            }
+          }}
+          role="dialog"
+        >
+          <section className="formula-warning-dialog" ref={formulaDialogRef}>
+            <h2 id="formula-warning-title">Potential spreadsheet formulas found</h2>
+            <p>
+              {formulaWarningCount.toLocaleString()} formula-like{' '}
+              {formulaWarningCount === 1 ? 'cell may' : 'cells may'} run as a formula when the CSV is opened
+              in spreadsheet software.
+            </p>
+            <p>
+              The safer download prefixes those values with an apostrophe. The original text remains visible,
+              and your uploaded files are never modified.
+            </p>
+            <div className="formula-warning-actions">
+              <button
+                autoFocus
+                className="primary-button"
+                onClick={() => {
+                  setFormulaWarningCount(null);
+                  onExport(baseSide, decisions, 'safe');
+                }}
+                type="button"
+              >
+                Download safe CSV
+              </button>
+              <button
+                className="secondary-button"
+                onClick={() => {
+                  setFormulaWarningCount(null);
+                  onExport(baseSide, decisions, 'original');
+                }}
+                type="button"
+              >
+                Download original CSV
+              </button>
+              <button className="secondary-button" onClick={closeFormulaWarning} type="button">
+                Cancel
+              </button>
+            </div>
           </section>
         </div>
       ) : null}
